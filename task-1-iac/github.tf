@@ -22,7 +22,7 @@ resource "aws_iam_role" "github" {
         Condition = {
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-            "token.actions.githubusercontent.com:sub" = "repo:Toluwani12/cloud-infra-assessment:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:sub" = "repo:Toluwani12@93001192/cloud-infra-assessment@1361543984:ref:refs/heads/main"
           }
         }
       }

@@ -103,10 +103,15 @@ No automatic rollback for that later HTTP failure is implemented.
 
 ## Verification and cleanup
 
-Earlier live checks confirmed the app runs as UID 10001 and an image reached
-ECR after tests and scanning. The reorganized scripts have separate local
-validation; a successful full ECS deployment must be confirmed by the new
-workflow run. Do not count an ECR upload alone as a deployment.
+Verified on 9 September 2026 (Africa/Lagos):
+- [Full workflow run](https://github.com/Toluwani12/cloud-infra-assessment/actions/runs/34291881199) passed build, tests, the HIGH/CRITICAL scan gate, OIDC, ECR upload, deployment, and verification.
+- ECS kept task definition `assessment-app:2`; `/healthz` returned `{"status":"ok"}`.
+- Local checks passed three application tests, eight simulated delivery failure/success scenarios, shell syntax, YAML/JSON checks, and Terraform validation.
+- A local Linux AMD64 container also passed the health check as UID 10001 with a read-only filesystem.
+
+The simulation checks used fake AWS/Docker commands; the linked workflow is
+the evidence for the real deployment. A passing severity gate does not mean
+that lower-severity vulnerabilities are absent.
 
 Before teardown, disable this workflow to prevent a concurrent deployment.
 Delete this assessment repository's images through the ECR console, then

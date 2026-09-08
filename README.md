@@ -7,7 +7,7 @@ and operational scripting.
 
 Built with Terraform and ECS Fargate:
 
-- Public load balancer serving an Nginx web application.
+- Public load balancer, initially serving Nginx and now the Task 2 Python app.
 - Two application tasks in private subnets across two Availability Zones.
 - CPU-based scaling configured between two and four tasks.
 - NAT gateways for outbound connectivity.
@@ -24,7 +24,9 @@ deployment, verification, and cleanup.
 
 A non-root Python image with tests, a HIGH/CRITICAL vulnerability gate,
 OIDC authentication, and separate publish, deploy, and verify scripts.
-See [Task 2 documentation](task-2-cicd/README.md) for the process and setup.
+The full build-to-deployment workflow passed, and the live Python health
+endpoint responded successfully. See [Task 2 documentation](task-2-cicd/README.md)
+for the process, verification run, and setup.
 
 ## Remaining Work
 

@@ -1,13 +1,31 @@
 # Cloud Infrastructure Assessment
 
-I am building an AWS web application using Terraform.
+My practical assessment covering AWS infrastructure, container CI/CD,
+and operational scripting.
 
-Verified on 8 September 2026:
-- Application returned HTTP 200 through the public load balancer.
-- ECS reported 2 running tasks and 0 pending tasks.
-- Tasks ran in separate Availability Zones: eu-west-1a and eu-west-1b.
-- Both load balancer targets were healthy on port 8080.
-- The main Terraform setup uses S3 remote state with native locking.
+## Task 1: AWS Infrastructure
 
-CPU scale-out under load and Availability Zone failure recovery
-have not yet been tested.
+Built with Terraform and ECS Fargate:
+
+- Public load balancer serving an Nginx web application.
+- Two application tasks in private subnets across two Availability Zones.
+- CPU-based scaling configured between two and four tasks.
+- NAT gateways for outbound connectivity.
+- CloudWatch logs and encrypted S3 state with locking.
+- Project, environment, and owner tags on supported resources.
+
+Verified: HTTP 200, two running tasks in different zones, healthy load
+balancer targets, and a scaling policy targeting 60% CPU usage.
+
+See [Task 1 documentation](task-1-iac/README.md) for architecture,
+deployment, verification, and cleanup.
+
+## Remaining Work
+
+- Task 2: Containerization and CI/CD.
+- Task 3: HTTP health-check script.
+
+## Costs
+
+The deployed AWS resources incur ongoing charges. Follow the Task 1
+cleanup instructions when the demonstration is finished.

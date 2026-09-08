@@ -1,6 +1,6 @@
 # Task 2: Container CI/CD
 
-The Python app answers `/` and `/healthz` on port 8080. Three unit tests
+I built a Python app that answers `/` and `/healthz` on port 8080. I wrote three unit tests to
 check its welcome message, health response, and missing-page behavior.
 
 ## Follow the process
@@ -19,7 +19,7 @@ check its welcome message, health response, and missing-page behavior.
 | `deploy.sh` | Register that definition and update the service |
 | `verify.sh` | Wait for stability, detect rollback, and check `/healthz` |
 
-The Dockerfile has a shared Alpine base, a build/test stage, and a runtime
+I used a shared Alpine base, a build/test stage, and a runtime
 stage. The base updates `libuuid` because the first Alpine scan found HIGH
 vulnerabilities with fixes available. The final image excludes the test
 file. Grype still blocks HIGH/CRITICAL findings, even without available
@@ -103,7 +103,7 @@ No automatic rollback for that later HTTP failure is implemented.
 
 ## Verification and cleanup
 
-Verified on 9 September 2026 (Africa/Lagos):
+I verified the following on 9 September 2026 (Africa/Lagos):
 - [Full workflow run](https://github.com/Toluwani12/cloud-infra-assessment/actions/runs/34291881199) passed build, tests, the HIGH/CRITICAL scan gate, OIDC, ECR upload, deployment, and verification.
 - ECS kept task definition `assessment-app:2`; `/healthz` returned `{"status":"ok"}`.
 - Local checks passed three application tests, eight simulated delivery failure/success scenarios, shell syntax, YAML/JSON checks, and Terraform validation.

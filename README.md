@@ -1,38 +1,46 @@
 # Cloud Infrastructure Assessment
 
-My practical assessment covering AWS infrastructure, container CI/CD,
-and operational scripting.
+I built an AWS application with Terraform, automated its container delivery,
+and wrote an HTTP health checker. I kept each task in its own folder and
+recorded the implementation in incremental Git commits.
 
 ## Task 1: AWS Infrastructure
 
-Built with Terraform and ECS Fargate:
+I used Terraform to create a public load balancer and two ECS Fargate tasks
+in private subnets across two Availability Zones. I configured NAT gateways,
+CPU scaling between two and four tasks, CloudWatch logs, resource tags, and
+encrypted S3 remote state with locking.
 
-- Public load balancer, initially serving Nginx and now the Task 2 Python app.
-- Two application tasks in private subnets across two Availability Zones.
-- CPU-based scaling configured between two and four tasks.
-- NAT gateways for outbound connectivity.
-- CloudWatch logs and encrypted S3 state with locking.
-- Project, environment, and owner tags on supported resources.
+I verified HTTP 200, two running tasks in separate zones, healthy targets,
+and a scaling policy targeting 60% CPU. I have not tested CPU scale-out
+under load or a full Availability Zone outage.
 
-Verified: HTTP 200, two running tasks in different zones, healthy load
-balancer targets, and a scaling policy targeting 60% CPU usage.
-
-See [Task 1 documentation](task-1-iac/README.md) for architecture,
-deployment, verification, and cleanup.
+[Setup, architecture, and cleanup](task-1-iac/README.md)
 
 ## Task 2: Containerization and CI/CD
 
-A non-root Python image with tests, a HIGH/CRITICAL vulnerability gate,
-OIDC authentication, and separate publish, deploy, and verify scripts.
-The full build-to-deployment workflow passed, and the live Python health
-endpoint responded successfully. See [Task 2 documentation](task-2-cicd/README.md)
-for the process, verification run, and setup.
+I built a Python application and a multi-stage, non-root Docker image.
+My GitHub Actions pipeline builds, tests, and scans the image, blocks
+HIGH/CRITICAL vulnerabilities, then uses OIDC to publish to ECR and deploy
+the same image digest to ECS. Small scripts handle publishing, deployment,
+and verification separately.
 
-## Remaining Work
+I verified a successful full pipeline run and the live Python health
+response. I documented production promotion; a separate production
+environment is not deployed.
 
-- Task 3: HTTP health-check script.
+[Files, commands, and deployment evidence](task-2-cicd/README.md)
+
+## Task 3: HTTP Health Checker
+
+I wrote a Python checker with JSON/environment configuration, expected
+status checks, response timing, configurable retries and backoff, a JSON
+summary, and failure exit codes. I verified ten automated tests and a
+successful check against the deployed application.
+
+[Usage, settings, tests, and monitoring extensions](task-3-scripting/README.md)
 
 ## Costs
 
-The deployed AWS resources incur ongoing charges. Follow the Task 1
-cleanup instructions when the demonstration is finished.
+My AWS resources incur charges while running. I follow the Task 1 and
+Task 2 cleanup instructions when the demonstration is finished.

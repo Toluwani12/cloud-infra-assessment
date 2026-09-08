@@ -1,4 +1,9 @@
-FROM python:3.13-alpine AS build
+FROM python:3.13-alpine AS base
+
+RUN apk upgrade --no-cache libuuid
+
+
+FROM base AS build
 
 WORKDIR /build
 
@@ -8,7 +13,7 @@ RUN python -m unittest -v
 RUN mkdir /out && cp app.py /out/app.py
 
 
-FROM python:3.13-alpine AS runtime
+FROM base AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1

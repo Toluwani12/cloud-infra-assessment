@@ -1,4 +1,4 @@
-FROM python:3.13-slim AS build
+FROM python:3.13-alpine AS build
 
 WORKDIR /build
 
@@ -8,7 +8,7 @@ RUN python -m unittest -v
 RUN mkdir /out && cp app.py /out/app.py
 
 
-FROM python:3.13-slim AS runtime
+FROM python:3.13-alpine AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1

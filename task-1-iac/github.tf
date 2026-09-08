@@ -63,3 +63,51 @@ resource "aws_iam_role_policy" "github_ecr" {
 output "github_role_arn" {
   value = aws_iam_role.github.arn
 }
+resource "aws_iam_role_policy" "github_ecs" {
+  name = "assessment-ecs-deployment"
+  role = aws_iam_role.github.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:RegisterTaskDefinition",
+          "ecs:DescribeTaskDefinition"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:UpdateService",
+          "ecs:DescribeServices"
+        ]
+        Resource = aws_ecs_service.app.id
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["iam:PassRole"]
+        Resource = aws_iam_role.ecs_execution.arn
+
+        Condition = {
+          StringEquals = {
+            "iam:PassedToService" = "ecs-tasks.amazonaws.com"
+          }
+        }
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["ecs:TagResource"]
+        Resource = "arn:aws:ecs:eu-west-1:151065283508:task-definition/assessment-app:*"
+
+        Condition = {
+          StringEquals = {
+            "ecs:CreateAction" = "RegisterTaskDefinition"
+          }
+        }
+      }
+    ]
+  })
+}

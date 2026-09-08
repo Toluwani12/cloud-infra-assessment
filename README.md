@@ -35,7 +35,7 @@ environment is not deployed.
 
 I wrote a Python checker with JSON/environment configuration, expected
 status checks, response timing, configurable retries and backoff, a JSON
-summary, and failure exit codes. I verified ten automated tests and a
+summary, and failure exit codes. I verified eleven automated tests and a
 successful check against the deployed application.
 
 [Usage, settings, tests, and monitoring extensions](task-3-scripting/README.md)

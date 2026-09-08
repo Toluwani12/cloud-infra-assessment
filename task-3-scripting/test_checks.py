@@ -1,5 +1,6 @@
 """Check retry decisions without waiting between attempts."""
 import unittest
+from http.client import BadStatusLine
 from unittest.mock import patch
 
 from checks import check_endpoint, request_once
@@ -36,3 +37,9 @@ class RetryTests(unittest.TestCase):
             result = request_once("http://example.com", 1)
         self.assertIsNone(result["status_code"])
         self.assertIn("timed out", result["error"])
+
+    def test_malformed_http_is_reported(self):
+        with patch("checks.urllib.request.OpenerDirector.open", side_effect=BadStatusLine("broken")):
+            result = request_once("http://example.com", 1)
+        self.assertIsNone(result["status_code"])
+        self.assertIn("broken", result["error"])

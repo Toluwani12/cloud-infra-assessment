@@ -1,5 +1,6 @@
 """Send HTTP GET requests and retry unsuccessful checks."""
 import time
+from http.client import HTTPException
 import urllib.error
 import urllib.request
 
@@ -19,7 +20,7 @@ def request_once(url, timeout):
     except urllib.error.HTTPError as exc:
         status = exc.code  # A 404 may be the expected response.
         exc.close()
-    except (urllib.error.URLError, OSError, ValueError) as exc:
+    except (urllib.error.URLError, OSError, ValueError, HTTPException) as exc:
         error = str(exc)
     return {"status_code": status,
             "response_time_ms": round((time.perf_counter() - start) * 1000, 2),

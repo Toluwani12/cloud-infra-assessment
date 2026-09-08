@@ -89,7 +89,7 @@ echo $?
 python3 -m unittest discover -s task-3-scripting -v
 ```
 
-I verified ten tests covering configuration, retries, increasing backoff,
+I verified eleven tests covering configuration, retries, increasing backoff,
 timeout handling, expected error/redirect statuses, JSON output, and exit
 codes. The integration tests start their own local HTTP server; they need
 no cloud resources. I also ran the checker against the deployed `/healthz`

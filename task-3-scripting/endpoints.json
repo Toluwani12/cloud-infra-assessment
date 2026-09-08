@@ -1,0 +1,9 @@
+{
+  "attempts": 3,
+  "timeout": 5,
+  "backoff": 1,
+  "endpoints": [
+    {"url": "http://localhost:8080/", "expected_status": 200},
+    {"url": "http://localhost:8080/healthz", "expected_status": 200}
+  ]
+}

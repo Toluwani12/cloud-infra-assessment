@@ -20,9 +20,14 @@ balancer targets, and a scaling policy targeting 60% CPU usage.
 See [Task 1 documentation](task-1-iac/README.md) for architecture,
 deployment, verification, and cleanup.
 
+## Task 2: Containerization and CI/CD
+
+A non-root Python image with tests, a HIGH/CRITICAL vulnerability gate,
+OIDC authentication, and separate publish, deploy, and verify scripts.
+See [Task 2 documentation](task-2-cicd/README.md) for the process and setup.
+
 ## Remaining Work
 
-- Task 2: Containerization and CI/CD.
 - Task 3: HTTP health-check script.
 
 ## Costs

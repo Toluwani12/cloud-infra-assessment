@@ -1,0 +1,51 @@
+{
+  "family": "assessment-app",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::151065283508:role/assessment-ecs-execution",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "containerDefinitions": [
+    {
+      "name": "app",
+      "image": "REPLACED_BY_DEPLOY_SCRIPT",
+      "essential": true,
+      "user": "10001:10001",
+      "readonlyRootFilesystem": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/assessment-app",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "app"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "key": "project",
+      "value": "cloud-assessment"
+    },
+    {
+      "key": "environment",
+      "value": "learning"
+    },
+    {
+      "key": "owner",
+      "value": "Toluwani"
+    }
+  ]
+}

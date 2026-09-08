@@ -1,4 +1,4 @@
-name: Build test scan and publish
+name: Build test scan and deploy
 
 on:
   push:
@@ -9,30 +9,27 @@ permissions:
   contents: read
   id-token: write
 
+concurrency:
+  group: assessment-deployment
+  cancel-in-progress: false
+
 jobs:
-  publish:
+  delivery:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
+    timeout-minutes: 25
     env:
-      AWS_REGION: eu-west-1
-      ECR_REGISTRY: 151065283508.dkr.ecr.eu-west-1.amazonaws.com
-      ECR_REPOSITORY: assessment-app
       IMAGE_TAG: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-
     steps:
       - name: Download repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Build application image
-        run: docker build -t assessment-app:$IMAGE_TAG task-2-cicd
-
-      - name: Run unit tests
+      - name: Build image and run tests
         run: |
-          docker build --target build -t assessment-tests task-2-cicd
+          docker build --pull --platform linux/amd64 -t assessment-app:$IMAGE_TAG task-2-cicd
+          docker build --platform linux/amd64 --target build -t assessment-tests task-2-cicd
           docker run --rm assessment-tests python -m unittest -v
 
-      - name: Scan for HIGH and CRITICAL vulnerabilities
+      - name: Block HIGH and CRITICAL vulnerabilities
         uses: anchore/scan-action@0d444ed77d83ee2ba7f5ced0d90d640a1281d762 # v7.3.0
         with:
           image: assessment-app:${{ env.IMAGE_TAG }}
@@ -45,24 +42,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c # v4
         with:
           role-to-assume: arn:aws:iam::151065283508:role/assessment-github-actions
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: eu-west-1
 
-      - name: Sign in to ECR
-        run: |
-          aws ecr get-login-password --region "$AWS_REGION" |
-            docker login --username AWS --password-stdin "$ECR_REGISTRY"
+      - name: Publish image to ECR
+        run: bash task-2-cicd/publish.sh
 
-      - name: Upload tested and scanned image
-        run: |
-          docker tag "assessment-app:$IMAGE_TAG" \
-            "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+      - name: Deploy image to ECS
+        run: bash task-2-cicd/deploy.sh
 
-          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-      - name: Record uploaded image digest
-        run: |
-          aws ecr describe-images \
-            --repository-name "$ECR_REPOSITORY" \
-            --image-ids "imageTag=$IMAGE_TAG" \
-            --query 'imageDetails[0].imageDigest' \
-            --output text
+      - name: Verify deployment
+        run: bash task-2-cicd/verify.sh

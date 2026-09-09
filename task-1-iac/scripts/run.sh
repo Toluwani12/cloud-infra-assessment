@@ -7,7 +7,7 @@ case "${TF_ACTION:-plan}" in
 esac
 # Plans and state stay off Git and are never uploaded as public artifacts.
 trap 'rm -f ci.tfplan' EXIT
-terraform init -input=false -lockfile=readonly
+terraform init -input=false
 terraform plan -input=false -lock-timeout=120s -out=ci.tfplan
 if [[ "${TF_ACTION:-plan}" == apply ]]; then
   terraform apply -input=false -lock-timeout=120s ci.tfplan

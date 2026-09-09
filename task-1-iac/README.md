@@ -76,7 +76,9 @@ It removes the binary plan afterward and does not upload state or plans as
 artifacts. Plan text is visible in workflow logs, so sensitive variables and
 outputs must be marked sensitive; public repository logs need extra care.
 
-I use Terraform 1.14.3 and the committed AWS provider lock file. S3 state
+I use Terraform 1.14.3 and the committed AWS provider lock file. Initialization
+may add a verified Linux package checksum in the temporary runner copy; it
+does not request a provider version upgrade. S3 state
 locking prevents concurrent writers. The workflow shares a concurrency group
 with application delivery to avoid simultaneous infrastructure/app changes.
 GitHub concurrency is not a durable queue: newer runs can replace pending runs.

@@ -2,5 +2,5 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 terraform fmt -check -recursive
-terraform init -backend=false -input=false -lockfile=readonly
+terraform init -backend=false -input=false
 terraform validate

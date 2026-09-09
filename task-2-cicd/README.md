@@ -20,7 +20,9 @@ check its welcome message, health response, and missing-page behavior.
 | `scripts/verify.sh` | Wait for stability, detect rollback, and check `/healthz` |
 
 I used a shared Alpine base, a build/test stage, and a runtime
-stage. The base updates `libuuid` because the first Alpine scan found HIGH
+stage. I explicitly create the `app` user/group with UID/GID 10001, then
+select that identity with `USER`. Application code stays root-owned and
+readable by the app; ECS makes the root filesystem read-only. The base updates `libuuid` because the first Alpine scan found HIGH
 vulnerabilities with fixes available. The final image excludes the test
 file. Grype still blocks HIGH/CRITICAL findings, even without available
 fixes. Medium findings may remain; a passing scan is not a permanent
@@ -120,3 +122,28 @@ repository deletion while images remain. Preserve a previous image if
 rollback is still needed. Stop local test containers and remove `.delivery/`
 when its records are no longer needed. The protected state bucket is managed
 separately by bootstrap.
+
+## Python and availability decisions
+
+I set `PYTHONUNBUFFERED=1` so logs reach CloudWatch promptly, and
+`PYTHONDONTWRITEBYTECODE=1` so Python does not try to write bytecode into
+the read-only filesystem. The JSON-form `CMD` starts Python directly.
+The app has no third-party dependencies; for added dependencies I would
+lock versions, verify hashes, and separate build dependencies from runtime.
+Alpine suits this small standard-library app; native Python packages may
+have better wheel compatibility on a Debian slim base. I would test that
+tradeoff rather than assume the smallest base is always best.
+
+My current Python HTTPServer is a learning server, not a production server.
+For production I would select a maintained WSGI/ASGI server, configure
+concurrency and request timeouts, handle graceful shutdown, pin and update
+the base-image digest, and test under representative load.
+
+ECS keeps a minimum healthy percentage of 100 and allows a maximum of 200
+during deployment. At desired count 2, it can run up to 4 tasks while
+replacements become healthy. The ALB drains deregistering targets for 30
+seconds. The circuit breaker enables rollback, and verify.sh checks the
+active revision and HTTP response. These are availability controls, not a
+zero-downtime guarantee: I have not run a continuous-traffic rollout test,
+and quotas, health-check quality, application bugs, and shutdown behavior
+can still affect users.

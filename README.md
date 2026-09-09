@@ -15,6 +15,9 @@ I verified HTTP 200, two running tasks in separate zones, healthy targets,
 and a scaling policy targeting 60% CPU. I have not tested CPU scale-out
 under load or a full Availability Zone outage.
 
+I added a GitHub Terraform workflow for checks, plans, and manually selected
+applies. AWS role setup is pending; validation alone is not an AWS deployment.
+
 [Setup, architecture, and cleanup](task-1-iac/README.md)
 
 ## Task 2: Containerization and CI/CD

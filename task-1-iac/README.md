@@ -2,7 +2,8 @@
 
 ## Overview
 
-I deployed an Nginx web application behind an Application Load Balancer
+I initially deployed Nginx and now deliver the Task 2 Python application
+behind an Application Load Balancer
 using ECS Fargate. Fargate runs the containers without requiring me to
 manage EC2 servers. ECS Service Auto Scaling provides the assessment's
 allowed equivalent to an Auto Scaling Group.
@@ -48,61 +49,43 @@ connections. Application logs are retained in CloudWatch for seven days.
 | outputs.tf | Website URL and resource identifiers |
 | bootstrap/ | Separate Terraform setup for the state bucket |
 
-## Prerequisites and Login
+## GitHub Terraform workflow
 
-Use Terraform 1.10+, AWS CLI 2.32+, Git, and an AWS account with
-provisioning permissions. Commands below run from the repository root.
+I now run normal Terraform checks, plans, and applies in GitHub Actions.
+The earlier local provisioning established the existing state bucket and
+infrastructure; it is not the ongoing deployment procedure.
 
-I used a separate IAM administrator for this learning deployment.
-Production provisioning should use appropriately scoped permissions.
+1. Push a Terraform change or open a pull request. GitHub runs formatting,
+   configuration validation, and script-control tests without AWS credentials.
+2. After the CI role is configured, pushes to main also create an AWS plan.
+3. Open **Actions → Terraform infrastructure**, open the infrastructure job,
+   and review its plan. Check additions, changes, and deletions.
+4. To apply, select **Run workflow**, choose **main**, and select **apply**.
+   GitHub makes a fresh plan and applies that saved plan within the same run.
 
-```bash
-aws login --profile assessment-admin --region eu-west-1 --remote
+A fresh apply run can differ from an earlier plan if AWS state or main has
+changed. I therefore recheck the selected commit and any intervening changes.
+This simple workflow has no independent reviewer approval or cross-run plan
+promotion. Production should add those controls. Selecting apply is an
+explicit request; pushes never automatically apply infrastructure changes.
 
-aws configure set credential_process \
-  "aws configure export-credentials --profile assessment-admin --format process" \
-  --profile assessment-terraform
+The pipeline is `.github/workflows/terraform.yml`. `scripts/check.sh` checks
+formatting and validates without connecting to the backend. `scripts/run.sh`
+initializes S3 state, plans, and applies only when explicitly selected.
+It removes the binary plan afterward and does not upload state or plans as
+artifacts. Plan text is visible in workflow logs, so sensitive variables and
+outputs must be marked sensitive; public repository logs need extra care.
 
-aws configure set region eu-west-1 --profile assessment-terraform
+I use Terraform 1.14.3 and the committed AWS provider lock file. S3 state
+locking prevents concurrent writers. The workflow shares a concurrency group
+with application delivery to avoid simultaneous infrastructure/app changes.
+GitHub concurrency is not a durable queue: newer runs can replace pending runs.
 
-export AWS_PROFILE=assessment-terraform
-export AWS_REGION=eu-west-1
-
-aws sts get-caller-identity
-```
-
-The process profile lets Terraform obtain temporary credentials through
-the AWS CLI. Credentials are not stored in the repository.
-
-## Deploy
-
-For a fresh setup, create the state bucket first:
-
-```bash
-terraform -chdir=task-1-iac/bootstrap init
-terraform -chdir=task-1-iac/bootstrap plan -out=bootstrap.tfplan
-terraform -chdir=task-1-iac/bootstrap apply bootstrap.tfplan
-```
-
-Set the bucket name in `backend.tf` to the bootstrap output.
-The committed name belongs to my account; another account must update it.
-
-Deploy the application infrastructure:
-
-```bash
-terraform -chdir=task-1-iac init -reconfigure
-terraform -chdir=task-1-iac fmt -check
-terraform -chdir=task-1-iac validate
-terraform -chdir=task-1-iac plan -out=deploy.tfplan
-terraform -chdir=task-1-iac apply deploy.tfplan
-```
-
-Review each plan before applying. Applying a saved plan executes it
-without another confirmation prompt.
-
-The main state is stored in encrypted, versioned S3 with native locking.
-The bootstrap state remains local and must be preserved securely.
-State and plan files are excluded from Git.
+The one-time AWS role setup is documented in [ci-bootstrap](ci-bootstrap/README.md).
+Until that role and `TERRAFORM_ROLE_ARN` are configured, only validation runs;
+the AWS infrastructure job is explicitly skipped. This does not prove a
+successful AWS plan or apply. Bootstrap state remains local and must be
+preserved securely; the main state is in encrypted, versioned S3.
 
 ## Verify
 
@@ -112,7 +95,7 @@ aws ecs wait services-stable \
   --services assessment-service \
   --region eu-west-1
 
-curl -I "$(terraform -chdir=task-1-iac output -raw website_url)"
+curl --fail http://assessment-alb-784103789.eu-west-1.elb.amazonaws.com/healthz
 
 aws ecs describe-services \
   --cluster assessment-cluster \
@@ -140,8 +123,8 @@ load and Availability Zone failure recovery have not yet been tested.
 - A NAT gateway per zone avoids a shared single-zone outbound dependency,
   but increases cost.
 - The application is stateless, allowing requests to reach either task.
-- HTTP is sufficient for this demonstration; production needs HTTPS
-  with a certificate.
+- The demonstration uses unencrypted HTTP. Production needs HTTPS
+  with a certificate before handling sensitive traffic.
 - The public Nginx image uses a mutable tag. A digest-pinned image would
   improve reproducibility.
 - With more time, I would add alarms, load tests, a controlled recovery
@@ -152,14 +135,12 @@ load and Availability Zone failure recovery have not yet been tested.
 NAT gateways, the load balancer, public IPv4 addresses, and Fargate tasks
 incur ongoing charges.
 
-When finished, review and apply a destruction plan:
-
-```bash
-terraform -chdir=task-1-iac plan -destroy -out=destroy.tfplan
-terraform -chdir=task-1-iac apply destroy.tfplan
-```
-
-This removes the application infrastructure and takes the website offline.
+I have not exposed a destroy option in the normal delivery workflow. For
+final teardown, first disable application delivery, empty the assessment
+ECR repository, and introduce a separately reviewed GitHub teardown run
+that saves a `terraform plan -destroy` and applies that saved plan after
+approval. That operation takes the site offline; it has not been run.
+The existing workflow intentionally supports only plan and apply.
 
 The separate state bucket remains and can still incur storage charges.
 It is protected by `prevent_destroy`. Complete removal requires preserving

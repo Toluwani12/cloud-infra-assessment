@@ -1,0 +1,39 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": "arn:aws:s3:::cloud-assessment-state-151065283508-eu-west-1",
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": [
+            "learning/terraform.tfstate",
+            "learning/terraform.tfstate.tflock",
+            "env:/"
+          ]
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::cloud-assessment-state-151065283508-eu-west-1/learning/terraform.tfstate",
+        "arn:aws:s3:::cloud-assessment-state-151065283508-eu-west-1/learning/terraform.tfstate.tflock"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::cloud-assessment-state-151065283508-eu-west-1/learning/terraform.tfstate.tflock"
+    }
+  ]
+}

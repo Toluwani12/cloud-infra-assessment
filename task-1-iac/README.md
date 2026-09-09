@@ -91,6 +91,13 @@ the AWS infrastructure job is explicitly skipped. This does not prove a
 successful AWS plan or apply. Bootstrap state remains local and must be
 preserved securely; the main state is in encrypted, versioned S3.
 
+## CI verification
+
+On 9 September 2026, I verified [the GitHub configuration checks](https://github.com/Toluwani12/cloud-infra-assessment/actions/runs/34353193653):
+formatting, provider initialization, Terraform validation, and five script
+control tests passed. The AWS infrastructure job was skipped because role
+setup is pending. I have not yet verified an AWS plan/apply through this workflow.
+
 ## Verify
 
 ```bash

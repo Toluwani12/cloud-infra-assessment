@@ -147,3 +147,7 @@ active revision and HTTP response. These are availability controls, not a
 zero-downtime guarantee: I have not run a continuous-traffic rollout test,
 and quotas, health-check quality, application bugs, and shutdown behavior
 can still affect users.
+
+After creating the named non-root account, I verified the local container's
+user, read-only code, and health response. The updated [full delivery run](https://github.com/Toluwani12/cloud-infra-assessment/actions/runs/34353193617)
+also passed build, tests, vulnerability scanning, publish, deployment, and verification.

@@ -79,8 +79,10 @@ outputs must be marked sensitive; public repository logs need extra care.
 I use Terraform 1.14.3 and the committed AWS provider lock file. Initialization
 may add a verified Linux package checksum in the temporary runner copy; it
 does not request a provider version upgrade. S3 state
-locking prevents concurrent writers. The workflow shares a concurrency group
-with application delivery to avoid simultaneous infrastructure/app changes.
+locking prevents concurrent writers. Infrastructure runs have their own concurrency group so they cannot cancel
+pending application delivery runs. S3 locking protects Terraform state.
+Before manually applying infrastructure changes, I wait for application
+delivery to finish; cross-workflow deployment coordination is not automated.
 GitHub concurrency is not a durable queue: newer runs can replace pending runs.
 
 The one-time AWS role setup is documented in [ci-bootstrap](ci-bootstrap/README.md).

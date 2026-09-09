@@ -45,10 +45,10 @@ jobs:
           aws-region: eu-west-1
 
       - name: Publish image to ECR
-        run: bash task-2-cicd/publish.sh
+        run: bash task-2-cicd/scripts/publish.sh
 
       - name: Deploy image to ECS
-        run: bash task-2-cicd/deploy.sh
+        run: bash task-2-cicd/scripts/deploy.sh
 
       - name: Verify deployment
-        run: bash task-2-cicd/verify.sh
+        run: bash task-2-cicd/scripts/verify.sh

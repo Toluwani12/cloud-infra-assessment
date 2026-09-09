@@ -13,11 +13,11 @@ check its welcome message, health response, and missing-page behavior.
 | `test_app.py` | Test application responses |
 | `Dockerfile` | Package Python and the app; run as UID 10001 |
 | `.github/workflows/cicd.yml` | Run the steps in order on pushes to main |
-| `config.sh` | Keep shared account, region, service, and URL settings |
-| `publish.sh` | Upload the checked image and record its digest |
+| `scripts/config.sh` | Keep shared account, region, service, and URL settings |
+| `scripts/publish.sh` | Upload the checked image and record its digest |
 | `task-definition.json` | Describe how ECS runs the Python container |
-| `deploy.sh` | Register that definition and update the service |
-| `verify.sh` | Wait for stability, detect rollback, and check `/healthz` |
+| `scripts/deploy.sh` | Register that definition and update the service |
+| `scripts/verify.sh` | Wait for stability, detect rollback, and check `/healthz` |
 
 I used a shared Alpine base, a build/test stage, and a runtime
 stage. The base updates `libuuid` because the first Alpine scan found HIGH
@@ -71,12 +71,12 @@ an already tested and scanned local `assessment-app:$IMAGE_TAG` image:
 
 ```bash
 export AWS_PROFILE=assessment-terraform
-bash task-2-cicd/publish.sh
-bash task-2-cicd/deploy.sh
-bash task-2-cicd/verify.sh
+bash task-2-cicd/scripts/publish.sh
+bash task-2-cicd/scripts/deploy.sh
+bash task-2-cicd/scripts/verify.sh
 ```
 
-`publish.sh` does not itself run the scanner: the workflow enforces that
+`scripts/publish.sh` does not itself run the scanner: the workflow enforces that
 order. The explicit JSON settings replace the earlier Nginx command and
 retain the execution role, logs, resource limits, tags, and non-root user.
 Terraform owns the infrastructure; the pipeline owns application revisions.
@@ -93,9 +93,9 @@ Use a separate production service/state and scoped role, with a GitHub
 production environment requiring approval. Deploy the SAME digest; do not
 rebuild. Rescan it before promotion because new vulnerabilities may appear.
 Update the explicit task-definition account/role/log/tag settings for
-production and override `config.sh` defaults through environment variables.
+production and override `scripts/config.sh` defaults through environment variables.
 
-The ECS circuit breaker can roll back an unsuccessful rollout. `verify.sh`
+The ECS circuit breaker can roll back an unsuccessful rollout. `scripts/verify.sh`
 fails if the active revision differs from the requested revision. If the
 HTTP check fails after rollout, investigate and explicitly roll back to the
 previous successful task revision, then recheck service stability and HTTP.

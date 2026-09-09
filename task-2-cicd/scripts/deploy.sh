@@ -7,7 +7,7 @@ image=$(cat "$DELIVERY_DIR/image-uri")
 [[ "$image" =~ @sha256:[a-f0-9]{64}$ ]] || { echo "Expected a digest-pinned image" >&2; exit 1; }
 rm -f "$DELIVERY_DIR/task-definition-arn"
 jq --arg image "$image" '.containerDefinitions[0].image = $image' \
-  "$(dirname "$0")/task-definition.json" > "$DELIVERY_DIR/task-definition.json"
+  "$(dirname "$0")/../task-definition.json" > "$DELIVERY_DIR/task-definition.json"
 
 # Register a new application revision and tell the existing service to use it.
 revision=$(aws ecs register-task-definition \
